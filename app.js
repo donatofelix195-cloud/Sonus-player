@@ -21,7 +21,16 @@ class SonusEngine {
     init() {
         // Setup UI listeners
         this.setupEventListeners();
+        this.registerServiceWorker();
         console.log('Sonus Engine Initialized');
+    }
+
+    registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Sonus PWA: Ready for Mobile'))
+                .catch(err => console.error('PWA Error:', err));
+        }
     }
 
     setupEventListeners() {
