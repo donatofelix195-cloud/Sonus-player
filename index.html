@@ -21,27 +21,27 @@
 
 <body>
     <div id="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo-container">
-                <div class="logo-glow"></div>
-                <img src="logo.png" alt="Sonus" class="logo-img" id="app-logo">
+                <img src="logo.png" alt="Sonus" class="logo-img">
                 <h1 class="brand-name">SONUS</h1>
             </div>
-            <nav>
-                <ul class="nav-links">
-                    <li class="active" id="nav-lib"><i data-lucide="music"></i> Biblioteca</li>
-                    <li id="nav-search"><i data-lucide="globe"></i> Descubrir Online</li>
-                    <li id="nav-scan"><i data-lucide="folder-search"></i> Escanear Carpeta</li>
-                    <li><i data-lucide="list-music"></i> Smart Playlists</li>
-                    <li><i data-lucide="settings"></i> Ajustes</li>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active" id="nav-lib"><i data-lucide="home"></i> Inicio</li>
+                    <li id="nav-search-tab"><i data-lucide="search"></i> Buscar</li>
+                    <li id="nav-scan"><i data-lucide="plus-square"></i> Importar Música</li>
                 </ul>
             </nav>
-            <div class="now-playing-mini">
-                <div class="mini-art"></div>
-                <div class="mini-info">
-                    <span class="mini-title">Selecciona una pista</span>
-                    <span class="mini-artist">Premium Audio</span>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-scroll">
+                <div class="playlist-section">
+                    <p class="section-title">TU BIBLIOTECA</p>
+                    <ul class="nav-links">
+                        <li id="nav-local-lib"><i data-lucide="library"></i> Archivos Locales</li>
+                        <li><i data-lucide="heart"></i> Tus Me Gusta</li>
+                        <li><i data-lucide="mic-2"></i> Artistas</li>
+                    </ul>
                 </div>
             </div>
         </aside>
@@ -54,6 +54,9 @@
                     <input type="text" id="main-search-input" placeholder="Buscar música local u online...">
                 </div>
                 <div class="user-profile">
+                    <div id="offline-indicator"
+                        style="display: none; color: #ff4444; font-size: 12px; margin-right: 15px; font-weight: 700;">
+                        OFFLINE</div>
                     <div class="hifi-badge">HI-FI</div>
                 </div>
             </header>
@@ -73,23 +76,40 @@
             </section>
 
             <section class="music-grid-section" id="local-section">
-                <h3>Colección Local</h3>
-                <div class="music-grid" id="music-grid">
-                    <!-- Tracks will be injected here -->
-                    <div class="empty-state">
-                        <i data-lucide="disc-3" class="spin"></i>
-                        <p>Escanea una carpeta para empezar tu experiencia Sonus.</p>
-                        <button class="btn-neon" id="scan-btn">Escanear Ahora</button>
+                <div class="section-header">
+                    <h3>Tu Colección</h3>
+                </div>
+                <!-- Table View for Tracks -->
+                <div class="track-list-container">
+                    <div class="track-list-header">
+                        <span class="col-idx">#</span>
+                        <span class="col-title">TÍTULO</span>
+                        <span class="col-album">ÁLBUM</span>
+                        <span class="col-duration"><i data-lucide="clock"></i></span>
+                    </div>
+                    <div id="music-list" class="track-list-body">
+                        <!-- Tracks will be injected here as rows -->
+                        <div class="empty-state">
+                            <i data-lucide="disc-3"></i>
+                            <p>Tu biblioteca está vacía.</p>
+                            <button class="btn-neon" id="scan-btn">Importar ahora</button>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <section class="music-grid-section" id="online-section" style="display: none;">
-                <h3>Resultados Online</h3>
-                <div class="music-grid" id="online-grid">
-                    <div class="empty-state">
-                        <i data-lucide="search"></i>
-                        <p>Busca artistas o canciones para descubrir música nueva.</p>
+                <div id="search-results-container">
+                    <div class="search-layout">
+                        <div class="top-result-box" id="top-result">
+                            <!-- Top result will be injected here -->
+                        </div>
+                        <div class="songs-result-box">
+                            <h3>Canciones</h3>
+                            <div id="online-list" class="track-list-body">
+                                <!-- Search results rows -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -55,9 +55,10 @@ class SonusEngine {
                 if (e.key === 'Enter') this.performSearch(searchInput.value);
             });
         }
-
+        // Navigation
         document.getElementById('nav-lib').addEventListener('click', () => this.switchView('local'));
-        document.getElementById('nav-search').addEventListener('click', () => this.switchView('online'));
+        document.getElementById('nav-local-lib').addEventListener('click', () => this.switchView('local'));
+        document.getElementById('nav-search-tab').addEventListener('click', () => this.switchView('online'));
         document.getElementById('nav-scan').addEventListener('click', () => this.triggerScan());
 
         // Mobile Navigation
@@ -86,9 +87,30 @@ class SonusEngine {
             });
         }
 
+        window.addEventListener('online', () => this.updateOnlineStatus());
+        window.addEventListener('offline', () => this.updateOnlineStatus());
+        this.updateOnlineStatus();
+
         // Audio element events
         this.audioElement.addEventListener('timeupdate', () => this.updateProgress());
         this.audioElement.addEventListener('ended', () => this.handleTrackEnd());
+    }
+
+    updateOnlineStatus() {
+        const isOnline = navigator.onLine;
+        const navSearch = document.getElementById('nav-search-tab');
+        const mNavSearch = document.getElementById('m-nav-search');
+
+        if (!isOnline) {
+            console.log("Sonus AI: Modo Offline Activado");
+            if (navSearch) navSearch.style.opacity = '0.5';
+            if (mNavSearch) mNavSearch.style.opacity = '0.5';
+            // Show a subtle toast or banner if needed
+        } else {
+            console.log("Sonus AI: Modo Online Activado");
+            if (navSearch) navSearch.style.opacity = '1';
+            if (mNavSearch) mNavSearch.style.opacity = '1';
+        }
     }
 
     filterByMood(chipElement) {
@@ -217,7 +239,7 @@ class SonusEngine {
     }
 
     renderLibrary(moodFilter = null) {
-        const grid = document.getElementById('music-grid');
+        const listContainer = document.getElementById('music-list');
         let tracksToRender = this.library;
 
         if (moodFilter) {
@@ -225,34 +247,31 @@ class SonusEngine {
         }
 
         if (tracksToRender.length === 0 && this.library.length > 0) {
-            grid.innerHTML = '<div class="empty-state"><p>No hay canciones con este estado de ánimo.</p></div>';
+            listContainer.innerHTML = '<div class="empty-state"><p>No hay canciones con este estado de ánimo.</p></div>';
             return;
         }
 
-        grid.innerHTML = '';
+        listContainer.innerHTML = '';
         tracksToRender.forEach((track, index) => {
-            const card = document.createElement('div');
-            card.className = 'track-card';
-            card.style.animation = `fadeInUp 0.4s ease forwards ${index * 0.05}s`;
-            card.style.opacity = '0';
-            card.innerHTML = `
-                <div class="card-art" style="background-image: url('${track.cover || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1470&auto=format&fit=crop'}')">
-                    <div class="card-play-overlay">
-                        <i data-lucide="play-circle"></i>
+            const row = document.createElement('div');
+            row.className = 'track-row';
+            row.innerHTML = `
+                <div class="col-idx">${index + 1}</div>
+                <div class="track-meta">
+                    <div class="track-row-art" style="background-image: url('${track.cover || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1470&auto=format&fit=crop'}')"></div>
+                    <div class="track-main-info">
+                        <span class="track-name">${track.name}</span>
+                        <span class="track-artist">${track.artist}</span>
                     </div>
                 </div>
-                <div class="card-info">
-                    <div class="card-title">${track.name}</div>
-                    <div class="card-artist">${track.artist}</div>
-                    <div class="card-genre" style="font-size: 9px; color: var(--neon-pink); font-weight: 700;">${track.genre.toUpperCase()}</div>
-                </div>
+                <div class="track-album">${track.album}</div>
+                <div class="track-time">--:--</div>
             `;
-            card.onclick = () => this.playTrack(index);
-            grid.appendChild(card);
+            row.onclick = () => this.playTrack(index);
+            listContainer.appendChild(row);
         });
 
         lucide.createIcons();
-        this.injectCardStyles();
     }
 
     injectCardStyles() {
@@ -530,52 +549,75 @@ class SonusEngine {
 
     async performSearch(query) {
         if (!query) return;
-        console.log(`Sonus Engine: Buscando "${query}" online...`);
+        console.log(`Sonus AI: Buscando "${query}"...`);
 
-        // Switch to online view
         this.switchView('online');
+        const list = document.getElementById('online-list');
+        const topResultBox = document.getElementById('top-result');
 
-        const grid = document.getElementById('online-grid');
-        grid.innerHTML = '<div class="empty-state"><i data-lucide="loader" class="spin"></i><p>Buscando en la base de datos global...</p></div>';
+        list.innerHTML = '<div class="empty-state"><i data-lucide="loader" class="spin"></i></div>';
         lucide.createIcons();
 
         try {
-            const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=20&entity=song`);
+            const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=15&entity=song`);
             const data = await response.json();
+
+            if (data.results.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>No se encontraron resultados.</p></div>';
+                return;
+            }
+
+            // Render Results
             this.renderOnlineLibrary(data.results);
+
+            // Intelligence: Top Result
+            const top = data.results[0];
+            const highResArt = top.artworkUrl100.replace('100x100', '600x600');
+            topResultBox.innerHTML = `
+                <h3>Resultado principal</h3>
+                <div class="top-result-card">
+                    <div class="top-result-art" style="background-image: url('${highResArt}')"></div>
+                    <div class="top-result-info">
+                        <div class="top-result-name">${top.trackName}</div>
+                        <div class="top-result-meta">
+                            <span class="track-artist">${top.artistName}</span>
+                            <span class="artist-badge">${top.primaryGenreName}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.querySelector('.top-result-card').onclick = () => this.playOnlinePreview(top);
+
         } catch (err) {
             console.error("Error en búsqueda online:", err);
-            grid.innerHTML = '<div class="empty-state"><p>Error al conectar con el servidor.</p></div>';
+            list.innerHTML = '<div class="empty-state"><p>Error al conectar.</p></div>';
         }
     }
 
     renderOnlineLibrary(results) {
-        const grid = document.getElementById('online-grid');
-        grid.innerHTML = '';
+        const list = document.getElementById('online-list');
+        list.innerHTML = '';
 
-        if (results.length === 0) {
-            grid.innerHTML = '<div class="empty-state"><p>No se encontraron resultados.</p></div>';
-            return;
-        }
+        results.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'track-row';
+            const durationMin = Math.floor((item.trackTimeMillis / 1000) / 60);
+            const durationSec = Math.floor((item.trackTimeMillis / 1000) % 60).toString().padStart(2, '0');
 
-        results.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'track-card';
-            const highResArt = item.artworkUrl100.replace('100x100', '600x600');
-            card.innerHTML = `
-                <div class="card-art" style="background-image: url('${highResArt}')">
-                    <div class="card-play-overlay">
-                        <i data-lucide="play-circle"></i>
+            row.innerHTML = `
+                <div class="col-idx">${index + 1}</div>
+                <div class="track-meta">
+                    <div class="track-row-art" style="background-image: url('${item.artworkUrl60}')"></div>
+                    <div class="track-main-info">
+                        <span class="track-name">${item.trackName}</span>
+                        <span class="track-artist">${item.artistName}</span>
                     </div>
                 </div>
-                <div class="card-info">
-                    <div class="card-title">${item.trackName}</div>
-                    <div class="card-artist">${item.artistName}</div>
-                    <div class="card-album" style="font-size: 10px; color: var(--text-gray); opacity: 0.7;">${item.collectionName}</div>
-                </div>
+                <div class="track-album">${item.collectionName}</div>
+                <div class="track-time">${durationMin}:${durationSec}</div>
             `;
-            card.onclick = () => this.playOnlinePreview(item);
-            grid.appendChild(card);
+            row.onclick = () => this.playOnlinePreview(item);
+            list.appendChild(row);
         });
         lucide.createIcons();
     }
