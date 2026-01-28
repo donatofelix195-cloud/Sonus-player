@@ -342,6 +342,8 @@ class SonusEngine {
     }
 
     async playTrack(index) {
+        const track = this.library[index];
+        if (!track) return;
         this.currentTrack = track;
 
         // AI Genre Detection & Adaptive EQ
@@ -647,24 +649,28 @@ class SonusEngine {
         const localSection = document.getElementById('local-section');
         const onlineSection = document.getElementById('online-section');
         const navLib = document.getElementById('nav-lib');
-        const navSearch = document.getElementById('nav-search');
+        const navSearch = document.getElementById('nav-search-tab');
         const mNavLib = document.getElementById('m-nav-lib');
         const mNavSearch = document.getElementById('m-nav-search');
 
+        // Scroll to top
+        const content = document.querySelector('.content');
+        if (content) content.scrollTop = 0;
+
         if (view === 'local') {
-            localSection.style.display = 'block';
-            onlineSection.style.display = 'none';
-            navLib.classList.add('active');
-            navSearch.classList.remove('active');
-            mNavLib.classList.add('active');
-            mNavSearch.classList.remove('active');
+            if (localSection) localSection.style.display = 'block';
+            if (onlineSection) onlineSection.style.display = 'none';
+            if (navLib) navLib.classList.add('active');
+            if (navSearch) navSearch.classList.remove('active');
+            if (mNavLib) mNavLib.classList.add('active');
+            if (mNavSearch) mNavSearch.classList.remove('active');
         } else {
-            localSection.style.display = 'none';
-            onlineSection.style.display = 'block';
-            navLib.classList.remove('active');
-            navSearch.classList.add('active');
-            mNavLib.classList.remove('active');
-            mNavSearch.classList.add('active');
+            if (localSection) localSection.style.display = 'none';
+            if (onlineSection) onlineSection.style.display = 'block';
+            if (navLib) navLib.classList.remove('active');
+            if (navSearch) navSearch.classList.add('active');
+            if (mNavLib) mNavLib.classList.remove('active');
+            if (mNavSearch) mNavSearch.classList.add('active');
         }
     }
 }
