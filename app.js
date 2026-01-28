@@ -65,10 +65,15 @@ class SonusEngine {
         document.getElementById('m-nav-search').addEventListener('click', () => this.switchView('online'));
         document.getElementById('m-nav-scan').addEventListener('click', () => this.triggerScan());
 
-        // Hidden Input Fallback
+        // Hidden Input Fallbacks
         const folderInput = document.getElementById('folder-input');
         if (folderInput) {
-            folderInput.addEventListener('change', (e) => this.handleFolderInput(e));
+            folderInput.addEventListener('change', (e) => this.handleImport(e));
+        }
+
+        const fileInput = document.getElementById('file-input');
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => this.handleImport(e));
         }
 
         // Mood selector
@@ -97,11 +102,17 @@ class SonusEngine {
     }
 
     triggerScan() {
-        // Try modern API first, but anticipate environmental restrictions
-        if ('showDirectoryPicker' in window) {
-            this.scanLocalFolder();
+        // Intelligence: Show a premium choice menu
+        const choice = confirm("¿Quieres escanear una CARPETA completa (Aceptar) o elegir ARCHIVOS individuales (Cancelar)?");
+
+        if (choice) {
+            if ('showDirectoryPicker' in window) {
+                this.scanLocalFolder();
+            } else {
+                document.getElementById('folder-input').click();
+            }
         } else {
-            document.getElementById('folder-input').click();
+            document.getElementById('file-input').click();
         }
     }
 
@@ -125,8 +136,10 @@ class SonusEngine {
         }
     }
 
-    async handleFolderInput(event) {
+    async handleImport(event) {
         const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
         this.library = [];
         console.log(`Sonus AI: Procesando ${files.length} archivos detectados...`);
 
@@ -138,7 +151,7 @@ class SonusEngine {
                     name: file.name.replace(/\.[^/.]+$/, ""),
                     file: file,
                     artist: "Señal Desconocida",
-                    album: "Archivo Local",
+                    album: "Archivo Importado",
                     genre: genre,
                     mood: this.calculateMood(genre),
                     isLocal: true,

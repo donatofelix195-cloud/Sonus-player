@@ -167,7 +167,9 @@
         </nav>
 
         <!-- Hidden inputs for compatibility -->
-        <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
+        <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*,.mp3,.flac,.wav,.m4a"
+            style="display: none;">
+        <input type="file" id="file-input" multiple accept="audio/*,.mp3,.flac,.wav,.m4a" style="display: none;">
     </div>
 
     <script src="app.js" type="module"></script>
