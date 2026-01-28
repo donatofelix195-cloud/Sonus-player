@@ -40,6 +40,18 @@ class SonusEngine {
             lyricsBtn.addEventListener('click', () => this.toggleLyrics());
         }
 
+        const searchInput = document.getElementById('main-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.performSearch(searchInput.value);
+            });
+        }
+
+        // Navigation
+        document.getElementById('nav-lib').addEventListener('click', () => this.switchView('local'));
+        document.getElementById('nav-search').addEventListener('click', () => this.switchView('online'));
+        document.getElementById('nav-scan').addEventListener('click', () => this.scanLocalFolder());
+
         // Audio element events
         this.audioElement.addEventListener('timeupdate', () => this.updateProgress());
         this.audioElement.addEventListener('ended', () => this.handleTrackEnd());
@@ -341,6 +353,98 @@ class SonusEngine {
         const overlay = document.getElementById('lyrics-overlay');
         overlay.classList.toggle('active');
         console.log("AI Lyrics: Sincronizando en tiempo real...");
+    }
+
+    async performSearch(query) {
+        if (!query) return;
+        console.log(`Sonus Engine: Buscando "${query}" online...`);
+
+        // Switch to online view
+        this.switchView('online');
+
+        const grid = document.getElementById('online-grid');
+        grid.innerHTML = '<div class="empty-state"><i data-lucide="loader" class="spin"></i><p>Buscando en la base de datos global...</p></div>';
+        lucide.createIcons();
+
+        try {
+            const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=20&entity=song`);
+            const data = await response.json();
+            this.renderOnlineLibrary(data.results);
+        } catch (err) {
+            console.error("Error en búsqueda online:", err);
+            grid.innerHTML = '<div class="empty-state"><p>Error al conectar con el servidor.</p></div>';
+        }
+    }
+
+    renderOnlineLibrary(results) {
+        const grid = document.getElementById('online-grid');
+        grid.innerHTML = '';
+
+        if (results.length === 0) {
+            grid.innerHTML = '<div class="empty-state"><p>No se encontraron resultados.</p></div>';
+            return;
+        }
+
+        results.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'track-card';
+            const highResArt = item.artworkUrl100.replace('100x100', '600x600');
+            card.innerHTML = `
+                <div class="card-art" style="background-image: url('${highResArt}')">
+                    <div class="card-play-overlay">
+                        <i data-lucide="play-circle"></i>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="card-title">${item.trackName}</div>
+                    <div class="card-artist">${item.artistName}</div>
+                    <div class="card-album" style="font-size: 10px; color: var(--text-gray); opacity: 0.7;">${item.collectionName}</div>
+                </div>
+            `;
+            card.onclick = () => this.playOnlinePreview(item);
+            grid.appendChild(card);
+        });
+        lucide.createIcons();
+    }
+
+    playOnlinePreview(item) {
+        this.currentTrack = {
+            name: item.trackName,
+            artist: item.artistName,
+            genre: item.primaryGenreName
+        };
+
+        this.audioElement.src = item.previewUrl;
+        this.applyAIArchitecture(item.primaryGenreName);
+
+        document.getElementById('player-name').innerText = item.trackName;
+        document.getElementById('player-artist').innerText = item.artistName;
+        document.getElementById('player-art').style.backgroundImage = `url('${item.artworkUrl100}')`;
+
+        this.audioElement.play();
+        this.isPlaying = true;
+        this.updatePlayBtn();
+
+        if (!this.audioContext) this.setupVisualizer();
+    }
+
+    switchView(view) {
+        const localSection = document.getElementById('local-section');
+        const onlineSection = document.getElementById('online-section');
+        const navLib = document.getElementById('nav-lib');
+        const navSearch = document.getElementById('nav-search');
+
+        if (view === 'local') {
+            localSection.style.display = 'block';
+            onlineSection.style.display = 'none';
+            navLib.classList.add('active');
+            navSearch.classList.remove('active');
+        } else {
+            localSection.style.display = 'none';
+            onlineSection.style.display = 'block';
+            navLib.classList.remove('active');
+            navSearch.classList.add('active');
+        }
     }
 }
 

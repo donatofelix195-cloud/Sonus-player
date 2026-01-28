@@ -25,8 +25,9 @@
             </div>
             <nav>
                 <ul class="nav-links">
-                    <li class="active"><i data-lucide="music"></i> Biblioteca</li>
-                    <li><i data-lucide="folder-search"></i> Escanear Carpeta</li>
+                    <li class="active" id="nav-lib"><i data-lucide="music"></i> Biblioteca</li>
+                    <li id="nav-search"><i data-lucide="globe"></i> Descubrir Online</li>
+                    <li id="nav-scan"><i data-lucide="folder-search"></i> Escanear Carpeta</li>
                     <li><i data-lucide="list-music"></i> Smart Playlists</li>
                     <li><i data-lucide="settings"></i> Ajustes</li>
                 </ul>
@@ -45,7 +46,7 @@
             <header class="main-header">
                 <div class="search-bar">
                     <i data-lucide="search"></i>
-                    <input type="text" placeholder="Buscar en mi biblioteca hi-fi...">
+                    <input type="text" id="main-search-input" placeholder="Buscar música local u online...">
                 </div>
                 <div class="user-profile">
                     <div class="hifi-badge">HI-FI</div>
@@ -59,7 +60,7 @@
                 </div>
             </section>
 
-            <section class="music-grid-section">
+            <section class="music-grid-section" id="local-section">
                 <h3>Colección Local</h3>
                 <div class="music-grid" id="music-grid">
                     <!-- Tracks will be injected here -->
@@ -67,6 +68,16 @@
                         <i data-lucide="disc-3" class="spin"></i>
                         <p>Escanea una carpeta para empezar tu experiencia Sonus.</p>
                         <button class="btn-neon" id="scan-btn">Escanear Ahora</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="music-grid-section" id="online-section" style="display: none;">
+                <h3>Resultados Online</h3>
+                <div class="music-grid" id="online-grid">
+                    <div class="empty-state">
+                        <i data-lucide="search"></i>
+                        <p>Busca artistas o canciones para descubrir música nueva.</p>
                     </div>
                 </div>
             </section>
