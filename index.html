@@ -16,6 +16,7 @@
     <link rel="icon" type="image/png" href="logo.png">
     <meta name="theme-color" content="#FF007F">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 
 <body>
@@ -135,13 +136,28 @@
         <!-- Audio Visualizer Canvas -->
         <canvas id="visualizer"></canvas>
 
-        <!-- Lyrics Overlay -->
         <div id="lyrics-overlay" class="lyrics-overlay">
             <div class="lyrics-content">
                 <div class="lyric-line active">Escaneando metadatos hi-fi...</div>
                 <div class="lyric-line">Disfruta de la mejor calidad de audio.</div>
             </div>
         </div>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item active" id="m-nav-lib">
+                <i data-lucide="music"></i>
+                <span>Biblioteca</span>
+            </div>
+            <div class="mobile-nav-item" id="m-nav-search">
+                <i data-lucide="globe"></i>
+                <span>Explorar</span>
+            </div>
+            <div class="mobile-nav-item" id="m-nav-scan">
+                <i data-lucide="folder-search"></i>
+                <span>Importar</span>
+            </div>
+        </nav>
     </div>
 
     <script src="app.js" type="module"></script>

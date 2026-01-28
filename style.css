@@ -437,6 +437,125 @@ body {
     background: var(--glass-border);
 }
 
+/* --- MOBILE ADAPTATIONS --- */
+@media screen and (max-width: 768px) {
+    #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr var(--player-height) 60px;
+        /* Space for mobile nav */
+    }
+
+    .sidebar {
+        display: none;
+        /* Hide desktop sidebar */
+    }
+
+    .content {
+        padding: 16px;
+        padding-bottom: 80px;
+    }
+
+    .main-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .hero {
+        height: 180px;
+        padding: 20px;
+    }
+
+    .hero h2 {
+        font-size: 28px;
+    }
+
+    .music-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .player-bar {
+        padding: 0 16px;
+        flex-direction: column;
+        height: auto;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        background: rgba(0, 0, 0, 0.95);
+    }
+
+    .player-track-info {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .player-controls {
+        width: 100%;
+        max-width: none;
+    }
+
+    .player-extras {
+        display: none;
+        /* Hide extra controls on mobile for clean look */
+    }
+
+    /* Mobile Bottom Navigation */
+    .mobile-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 65px;
+        background: var(--bg-black);
+        border-top: 1px solid var(--glass-border);
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+    }
+
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        color: var(--text-gray);
+        font-size: 10px;
+        text-decoration: none;
+    }
+
+    .mobile-nav-item.active {
+        color: var(--neon-pink);
+    }
+
+    .mobile-nav-item i {
+        width: 24px;
+        height: 24px;
+    }
+
+    #visualizer {
+        left: 0;
+        width: 100vw;
+        height: 80px;
+    }
+
+    .lyrics-overlay {
+        left: 0;
+    }
+}
+
+/* Hide mobile nav on desktop */
+@media screen and (min-width: 769px) {
+    .mobile-nav {
+        display: none;
+    }
+}
+
 /* Lyrics Overlay */
 .lyrics-overlay {
     position: fixed;

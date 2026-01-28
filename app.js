@@ -61,6 +61,11 @@ class SonusEngine {
         document.getElementById('nav-search').addEventListener('click', () => this.switchView('online'));
         document.getElementById('nav-scan').addEventListener('click', () => this.scanLocalFolder());
 
+        // Mobile Navigation
+        document.getElementById('m-nav-lib').addEventListener('click', () => this.switchView('local'));
+        document.getElementById('m-nav-search').addEventListener('click', () => this.switchView('online'));
+        document.getElementById('m-nav-scan').addEventListener('click', () => this.scanLocalFolder());
+
         // Audio element events
         this.audioElement.addEventListener('timeupdate', () => this.updateProgress());
         this.audioElement.addEventListener('ended', () => this.handleTrackEnd());
@@ -442,17 +447,23 @@ class SonusEngine {
         const onlineSection = document.getElementById('online-section');
         const navLib = document.getElementById('nav-lib');
         const navSearch = document.getElementById('nav-search');
+        const mNavLib = document.getElementById('m-nav-lib');
+        const mNavSearch = document.getElementById('m-nav-search');
 
         if (view === 'local') {
             localSection.style.display = 'block';
             onlineSection.style.display = 'none';
             navLib.classList.add('active');
             navSearch.classList.remove('active');
+            mNavLib.classList.add('active');
+            mNavSearch.classList.remove('active');
         } else {
             localSection.style.display = 'none';
             onlineSection.style.display = 'block';
             navLib.classList.remove('active');
             navSearch.classList.add('active');
+            mNavLib.classList.remove('active');
+            mNavSearch.classList.add('active');
         }
     }
 }
