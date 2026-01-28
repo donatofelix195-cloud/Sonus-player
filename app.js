@@ -36,7 +36,7 @@ class SonusEngine {
     setupEventListeners() {
         const scanBtn = document.getElementById('scan-btn');
         if (scanBtn) {
-            scanBtn.addEventListener('click', () => this.scanLocalFolder());
+            scanBtn.addEventListener('click', () => this.triggerScan());
         }
 
         const playPauseBtn = document.getElementById('play-pause-btn');
@@ -56,15 +56,20 @@ class SonusEngine {
             });
         }
 
-        // Navigation
         document.getElementById('nav-lib').addEventListener('click', () => this.switchView('local'));
         document.getElementById('nav-search').addEventListener('click', () => this.switchView('online'));
-        document.getElementById('nav-scan').addEventListener('click', () => this.scanLocalFolder());
+        document.getElementById('nav-scan').addEventListener('click', () => this.triggerScan());
 
         // Mobile Navigation
         document.getElementById('m-nav-lib').addEventListener('click', () => this.switchView('local'));
         document.getElementById('m-nav-search').addEventListener('click', () => this.switchView('online'));
-        document.getElementById('m-nav-scan').addEventListener('click', () => this.scanLocalFolder());
+        document.getElementById('m-nav-scan').addEventListener('click', () => this.triggerScan());
+
+        // Hidden Input Fallback
+        const folderInput = document.getElementById('folder-input');
+        if (folderInput) {
+            folderInput.addEventListener('change', (e) => this.handleFolderInput(e));
+        }
 
         // Mood selector
         const moodSelector = document.getElementById('mood-selector');
@@ -91,6 +96,15 @@ class SonusEngine {
         this.renderLibrary(mood === 'all' ? null : mood);
     }
 
+    triggerScan() {
+        // Try modern API first, but anticipate environmental restrictions
+        if ('showDirectoryPicker' in window) {
+            this.scanLocalFolder();
+        } else {
+            document.getElementById('folder-input').click();
+        }
+    }
+
     async scanLocalFolder() {
         try {
             const dirHandle = await window.showDirectoryPicker();
@@ -105,9 +119,37 @@ class SonusEngine {
             // Intelligence: Try to enrich metadata for unknown tracks
             this.enrichMetadata();
         } catch (err) {
-            console.error("Error al acceder a la carpeta:", err);
-            alert("Acceso denegado o cancelado.");
+            console.warn("Sonus: API moderna restringida, activando modo compatible...", err);
+            // Fallback to manual input click if permission denied or unsupported
+            document.getElementById('folder-input').click();
         }
+    }
+
+    async handleFolderInput(event) {
+        const files = Array.from(event.target.files);
+        this.library = [];
+        console.log(`Sonus AI: Procesando ${files.length} archivos detectados...`);
+
+        files.forEach(file => {
+            if (this.isAudioFile(file.name)) {
+                const genre = this.detectGenre(file.name);
+                this.library.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: file.name.replace(/\.[^/.]+$/, ""),
+                    file: file,
+                    artist: "Señal Desconocida",
+                    album: "Archivo Local",
+                    genre: genre,
+                    mood: this.calculateMood(genre),
+                    isLocal: true,
+                    cover: null
+                });
+            }
+        });
+
+        this.renderLibrary();
+        this.updateSmartPlaylists();
+        this.enrichMetadata();
     }
 
     async scanRecursive(dirHandle) {
