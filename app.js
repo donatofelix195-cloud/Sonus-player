@@ -66,41 +66,94 @@ class SonusEngine {
         document.getElementById('m-nav-search').addEventListener('click', () => this.switchView('online'));
         document.getElementById('m-nav-scan').addEventListener('click', () => this.scanLocalFolder());
 
+        // Mood selector
+        const moodSelector = document.getElementById('mood-selector');
+        if (moodSelector) {
+            moodSelector.addEventListener('click', (e) => {
+                if (e.target.classList.contains('mood-chip')) {
+                    this.filterByMood(e.target);
+                }
+            });
+        }
+
         // Audio element events
         this.audioElement.addEventListener('timeupdate', () => this.updateProgress());
         this.audioElement.addEventListener('ended', () => this.handleTrackEnd());
     }
 
+    filterByMood(chipElement) {
+        const mood = chipElement.getAttribute('data-mood');
+
+        // UI update
+        document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
+        chipElement.classList.add('active');
+
+        this.renderLibrary(mood === 'all' ? null : mood);
+    }
+
     async scanLocalFolder() {
         try {
-            // Modern File System Access API
             const dirHandle = await window.showDirectoryPicker();
             this.library = [];
+            console.log("Sonus AI: Iniciando escaneo profundo...");
 
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'file') {
-                    const file = await entry.getFile();
-                    if (this.isAudioFile(file.name)) {
-                        const genre = this.detectGenre(file.name);
-                        this.library.push({
-                            name: file.name.replace(/\.[^/.]+$/, ""),
-                            file: file,
-                            handle: entry,
-                            artist: "Artista Local",
-                            album: "Colección Hi-Fi",
-                            genre: genre,
-                            mood: this.calculateMood(genre)
-                        });
-                    }
-                }
-            }
+            await this.scanRecursive(dirHandle);
 
             this.renderLibrary();
             this.updateSmartPlaylists();
+
+            // Intelligence: Try to enrich metadata for unknown tracks
+            this.enrichMetadata();
         } catch (err) {
             console.error("Error al acceder a la carpeta:", err);
-            alert("Necesitas otorgar permisos para escanear carpetas locales.");
+            alert("Acceso denegado o cancelado.");
         }
+    }
+
+    async scanRecursive(dirHandle) {
+        for await (const entry of dirHandle.values()) {
+            if (entry.kind === 'file') {
+                const file = await entry.getFile();
+                if (this.isAudioFile(file.name)) {
+                    const genre = this.detectGenre(file.name);
+                    this.library.push({
+                        id: Math.random().toString(36).substr(2, 9),
+                        name: file.name.replace(/\.[^/.]+$/, ""),
+                        file: file,
+                        artist: "Señal Desconocida",
+                        album: "Archivo Local",
+                        genre: genre,
+                        mood: this.calculateMood(genre),
+                        isLocal: true,
+                        cover: null
+                    });
+                }
+            } else if (entry.kind === 'directory') {
+                await this.scanRecursive(entry);
+            }
+        }
+    }
+
+    async enrichMetadata() {
+        console.log("Sonus AI: Optimizando biblioteca con datos globales...");
+        for (let track of this.library) {
+            if (track.artist === "Señal Desconocida") {
+                const query = track.name;
+                try {
+                    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1&entity=song`);
+                    const data = await res.json();
+                    if (data.results && data.results[0]) {
+                        const result = data.results[0];
+                        track.artist = result.artistName;
+                        track.album = result.collectionName;
+                        track.cover = result.artworkUrl100.replace('100x100', '600x600');
+                        track.genre = result.primaryGenreName;
+                        track.mood = this.calculateMood(result.primaryGenreName);
+                    }
+                } catch (e) { }
+            }
+        }
+        this.renderLibrary();
     }
 
     isAudioFile(filename) {
@@ -108,16 +161,27 @@ class SonusEngine {
         return ['mp3', 'flac', 'wav', 'm4a', 'ogg'].includes(ext);
     }
 
-    renderLibrary() {
+    renderLibrary(moodFilter = null) {
         const grid = document.getElementById('music-grid');
-        if (this.library.length === 0) return;
+        let tracksToRender = this.library;
+
+        if (moodFilter) {
+            tracksToRender = this.library.filter(t => t.mood === moodFilter);
+        }
+
+        if (tracksToRender.length === 0 && this.library.length > 0) {
+            grid.innerHTML = '<div class="empty-state"><p>No hay canciones con este estado de ánimo.</p></div>';
+            return;
+        }
 
         grid.innerHTML = '';
-        this.library.forEach((track, index) => {
+        tracksToRender.forEach((track, index) => {
             const card = document.createElement('div');
             card.className = 'track-card';
+            card.style.animation = `fadeInUp 0.4s ease forwards ${index * 0.05}s`;
+            card.style.opacity = '0';
             card.innerHTML = `
-                <div class="card-art">
+                <div class="card-art" style="background-image: url('${track.cover || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1470&auto=format&fit=crop'}')">
                     <div class="card-play-overlay">
                         <i data-lucide="play-circle"></i>
                     </div>
@@ -125,6 +189,7 @@ class SonusEngine {
                 <div class="card-info">
                     <div class="card-title">${track.name}</div>
                     <div class="card-artist">${track.artist}</div>
+                    <div class="card-genre" style="font-size: 9px; color: var(--neon-pink); font-weight: 700;">${track.genre.toUpperCase()}</div>
                 </div>
             `;
             card.onclick = () => this.playTrack(index);
@@ -218,10 +283,49 @@ class SonusEngine {
         this.audioElement.play();
         this.isPlaying = true;
         this.updatePlayBtn();
+        this.generateAIRecommendations(track.genre);
 
         if (!this.audioContext) {
             this.setupVisualizer();
         }
+    }
+
+    async generateAIRecommendations(genre) {
+        console.log(`Sonus AI: Generando recomendaciones para el género ${genre}...`);
+        try {
+            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(genre)}&limit=5&entity=song`);
+            const data = await res.json();
+            this.updateRecommendationUI(data.results);
+        } catch (e) { }
+    }
+
+    updateRecommendationUI(results) {
+        // Find or create recommendations section
+        let recSection = document.getElementById('recommendations');
+        if (!recSection) {
+            recSection = document.createElement('section');
+            recSection.id = 'recommendations';
+            recSection.className = 'music-grid-section';
+            recSection.innerHTML = '<h3>Recomendado por Sonus AI</h3><div class="music-grid" id="rec-grid"></div>';
+            document.querySelector('.content').appendChild(recSection);
+        }
+
+        const grid = document.getElementById('rec-grid');
+        grid.innerHTML = '';
+        results.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'track-card mini';
+            card.innerHTML = `
+                <div class="card-art" style="background-image: url('${item.artworkUrl100}')"></div>
+                <div class="card-info">
+                    <div class="card-title">${item.trackName}</div>
+                    <div class="card-artist">${item.artistName}</div>
+                </div>
+            `;
+            card.onclick = () => this.playOnlinePreview(item);
+            grid.appendChild(card);
+        });
+        lucide.createIcons();
     }
 
     togglePlay() {

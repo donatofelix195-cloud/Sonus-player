@@ -24,6 +24,9 @@ body {
     font-family: 'Inter', sans-serif;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
+    user-select: none;
+    /* Make it feel like an app, no text selection */
+    cursor: default;
 }
 
 #app {
@@ -105,8 +108,15 @@ body {
 .content {
     background: linear-gradient(180deg, #111111 0%, #000000 100%);
     padding: 24px 40px;
-    overflow-y: auto;
+    overflow-y: scroll;
     position: relative;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.content::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
 }
 
 .main-header {
@@ -164,7 +174,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at top right, #FF007F22 0%, transparent 60%);
+    background: radial-gradient(circle at top right, #FF007F33 0%, transparent 70%);
     border-radius: 19px;
 }
 
@@ -172,6 +182,36 @@ body {
     font-size: 42px;
     font-weight: 800;
     line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.mood-selector {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.mood-chip {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    user-select: none;
+}
+
+.mood-chip:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.mood-chip.active {
+    background: var(--neon-pink);
+    border-color: var(--neon-pink);
+    color: white;
+    box-shadow: 0 0 10px var(--neon-pink-glow);
 }
 
 .tag {
@@ -223,6 +263,18 @@ body {
 
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
