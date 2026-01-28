@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonus - The Pure Player</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <img src="https://i.ibb.co/hL4DkqB/Sonus-Logo.png" alt="Sonus" class="logo-img" id="app-logo">
+                <h1 class="brand-name">SONUS</h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li class="active"><i data-lucide="music"></i> Biblioteca</li>
+                    <li><i data-lucide="folder-search"></i> Escanear Carpeta</li>
+                    <li><i data-lucide="list-music"></i> Smart Playlists</li>
+                    <li><i data-lucide="settings"></i> Ajustes</li>
+                </ul>
+            </nav>
+            <div class="now-playing-mini">
+                <div class="mini-art"></div>
+                <div class="mini-info">
+                    <span class="mini-title">Selecciona una pista</span>
+                    <span class="mini-artist">Premium Audio</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header class="main-header">
+                <div class="search-bar">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Buscar en mi biblioteca hi-fi...">
+                </div>
+                <div class="user-profile">
+                    <div class="hifi-badge">HI-FI</div>
+                </div>
+            </header>
+
+            <section class="hero">
+                <div class="hero-content">
+                    <span class="tag">RECIÉN AÑADIDO</span>
+                    <h2>Toda tu música. <br> Sin concesiones.</h2>
+                </div>
+            </section>
+
+            <section class="music-grid-section">
+                <h3>Colección Local</h3>
+                <div class="music-grid" id="music-grid">
+                    <!-- Tracks will be injected here -->
+                    <div class="empty-state">
+                        <i data-lucide="disc-3" class="spin"></i>
+                        <p>Escanea una carpeta para empezar tu experiencia Sonus.</p>
+                        <button class="btn-neon" id="scan-btn">Escanear Ahora</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Player Bar -->
+        <footer class="player-bar">
+            <div class="player-track-info">
+                <div class="track-artwork" id="player-art"></div>
+                <div class="track-details">
+                    <div class="track-name" id="player-name">Escucha la Pureza</div>
+                    <div class="track-artist" id="player-artist">Sonus Hi-Fi Engine</div>
+                </div>
+                <i data-lucide="heart" class="btn-icon"></i>
+            </div>
+
+            <div class="player-controls">
+                <div class="control-buttons">
+                    <i data-lucide="shuffle" class="btn-icon secondary"></i>
+                    <i data-lucide="skip-back" class="btn-icon"></i>
+                    <div class="play-btn-container">
+                        <i data-lucide="play" class="btn-icon play-btn" id="play-pause-btn"></i>
+                    </div>
+                    <i data-lucide="skip-forward" class="btn-icon"></i>
+                    <i data-lucide="repeat" class="btn-icon secondary"></i>
+                </div>
+                <div class="progress-container">
+                    <span class="time">0:00</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="time">0:00</span>
+                </div>
+            </div>
+
+            <div class="player-extras">
+                <i data-lucide="mic-2" class="btn-icon secondary" title="Letras Sincronizadas"></i>
+                <div class="eq-control">
+                    <i data-lucide="sliders-horizontal" class="btn-icon secondary"></i>
+                    <span id="eq-status">AI EQ: AUTO</span>
+                </div>
+                <div class="volume-container">
+                    <i data-lucide="volume-2" class="btn-icon secondary"></i>
+                    <div class="volume-bar-bg">
+                        <div class="volume-bar-fill" style="width: 80%;"></div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Audio Visualizer Canvas -->
+        <canvas id="visualizer"></canvas>
+
+        <!-- Lyrics Overlay -->
+        <div id="lyrics-overlay" class="lyrics-overlay">
+            <div class="lyrics-content">
+                <div class="lyric-line active">Escaneando metadatos hi-fi...</div>
+                <div class="lyric-line">Disfruta de la mejor calidad de audio.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js" type="module"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
